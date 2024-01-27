@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    History
+{% endblock %}
+
+{% block main %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-start">Current Currency</th>
+                <th class="text-end">New Currency</th>
+                <th class="text-end">Exchange Rate</th>
+                <th class="text-end">Cash</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in transactions %}
+                <tr>
+                    <td class="text-start">{{ transaction.CurrentCurrency}}</td>
+                    <td class="text-end">{{ transaction.NewCurrency }}</td>
+                    <td class="text-end">{{ transaction.conversion_rate}}</td>
+                    <td class="text-end">{{ transaction.cash }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

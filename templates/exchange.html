@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Exchange
+{% endblock %}
+
+{% block main %}
+    <form action="/exchange" method="post" class="container mt-5" id="exchangeForm">
+        <div class="row justify-content-center">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label for="fromCurrency"><b>Current Currency:</b></label>
+                    <input id="fromc" type="text" class="form-control typeahead" data-provide="typeahead" placeholder="Current Currency" name="from_currency" required />
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label for="toCurrency"><b>Desired Currency:</b></label>
+                    <input id="toc" type="text" class="form-control typeahead" data-provide="typeahead" placeholder="Desired Currency" name="to_currency" required />
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label for="amount"><b>Amount:</b></label>
+                    <input id="qty" type="text" class="form-control mb-3" name="amount" placeholder="Amount" pattern="^\d+(\.\d{1,2})?$" title="Enter 0 or a positive number with up to two decimal places" required />
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-sm-4">
+                <button class="btn btn-primary" type="button" onclick="validateAndExchange()">Exchange</button>
+            </div>
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js"></script>
+        <script>
+            $.getJSON('https://v6.exchangerate-api.com/v6/5cf07c0e1450306c4e495730/latest/USD', function (data) {
+                var currencies = Object.keys(data['conversion_rates']);
+                $('.typeahead').typeahead({
+                    source: currencies,
+                    autoSelect: true
+                });
+            });
+
+            function validateAndExchange() {
+                // Validate inputs
+                var fromCurrency = $("#fromc").val();
+                var toCurrency = $("#toc").val();
+                var amount = $("#qty").val();
+
+                if (!fromCurrency || !toCurrency || !amount) {
+                    alert("Please fill in all required fields.");
+                    return;
+                }
+
+                // Additional validation for amount
+                if (!isValidAmount(amount)) {
+                    alert("Please enter a valid amount (0 or a positive number with up to two decimal places).");
+                    return;
+                }
+
+                // If validation passes, proceed with exchange
+                exchange(fromCurrency, toCurrency, amount);
+            }
+
+            function isValidAmount(amount) {
+                // Check if the amount is a valid number with up to two decimal places
+                var regex = /^\d+(\.\d{1,2})?$/;
+                return regex.test(amount);
+            }
+
+            function exchange() {
+                var data = $.ajax({
+                    url: '/convert',
+                    type: 'POST',
+                    data: { json: JSON.stringify({
+                        amount: $( "#qty" ).val(),
+                        from_currency: $( "#fromc" ).val(),
+                        to_currency: $( "#toc" ).val(),
+                    })},
+                    success: function(response){
+                        alert("Here is your desired currency: " + response.converted_amount + " " + $("#toc").val());
+                    },
+                    dataType: 'json'
+                });
+            }
+        </script>
+    </form>
+{% endblock %}
